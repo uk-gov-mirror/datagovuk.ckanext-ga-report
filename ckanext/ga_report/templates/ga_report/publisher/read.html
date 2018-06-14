@@ -3,7 +3,7 @@
 
 {% block title %}Usage by Dataset - {{ super() }}{% endblock %}
 
-{% block optional_head %}
+{% block head_extras %}
     <link rel="stylesheet" type="text/css" href="/scripts/vendor/rickshaw.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/ga_report.css?1"/>
     <script type="text/javascript" src="/scripts/modernizr-2.6.2.custom.js"></script>
@@ -26,7 +26,21 @@
     {% endif %}
 {% endblock %}
 
+{% block secondary_content %}
+  <div class="col-md-4">
+    <div class="whitebox">
+      <strong>Graph Legend</strong>
+      <div id="graph-legend-container">
+        <div style="display: none;" id="legend_none">(No graph is loaded)</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
 {% block primary_content_inner %}
+  <script type="text/javascript">
+    var data_for_reports = {};
+  </script>
   <div>
 
   {% set download_link=h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport',action='dataset_csv',id=c.publisher_name or 'all',month=c.month or 'all')%}
@@ -41,14 +55,6 @@
     </h1>
 
     <div class="row" style="background: #fff;">
-      <div class="col-md-4">
-        <div class="whitebox">
-          <strong>Graph Legend</strong>
-          <div id="graph-legend-container">
-            <div style="display: none;" id="legend_none">(No graph is loaded)</div>
-          </div>
-        </div>
-      </div>
       <div class="col-md-8">
         <div class="whitebox">
           {% if c.graph_data %}
@@ -97,6 +103,22 @@
       {% endfor %}
     </table>
   {% endif %}
+
+    <script type="text/javascript">
+        function defer_method(method) {
+            if (method) {
+                method();
+            } else {
+                setTimeout(function() { defer_method(method) }, 50);
+            }
+        }
+        $(function() {
+          for(i in data_for_reports) {
+            defer_method(CKAN.GA_Reports.render_rickshaw.apply(this, data_for_reports[i]));
+          }
+          defer_method(CKAN.GA_Reports.bind_month_selector);
+        });
+    </script>
 
   {{m.ga_footer()}}
 
