@@ -3,17 +3,17 @@
 
 {% block title %}Site Usage - {{ super() }}{% endblock %}
 
-
-{% block optional_head %}
+{% block head_extras %}
+    {{ super() }}
     <link rel="stylesheet" type="text/css" href="/scripts/vendor/rickshaw.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/ga_report.css?1"/>
     <script type="text/javascript" src="/scripts/modernizr-2.6.2.custom.js"></script>
-    <script type="text/javascript" src="/scripts/ckanext_ga_reports.js?1"></script>
-    <script type="text/javascript" src="/scripts/vendor/jquery.sparkline.modified.js"></script>
     <script type="text/javascript" src="/scripts/rickshaw_ie7_shim.js"></script>
     <script type="text/javascript" src="/scripts/vendor/d3.v2.js"></script>
     <script type="text/javascript" src="/scripts/vendor/d3.layout.min.js"></script>
     <script type="text/javascript" src="/scripts/vendor/rickshaw.min.js"></script>
+    <script type="text/javascript" src="/scripts/vendor/jquery.sparkline.modified.js"></script>
+    <script type="text/javascript" src="/scripts/ckanext_ga_reports.js?1"></script>
   {% endblock %}
 
 {% block breadcrumb_content %}
@@ -21,7 +21,21 @@
     <li><a href="/data/site-usage">Site-wide</a></li>
   {% endblock %}
 
+{% block secondary_content %}
+  <div class="col-md-4">
+    <div class="whitebox">
+      <strong>Graph Legend</strong>
+      <div id="graph-legend-container">
+        <div style="display: none;" id="legend_none">(No graph is loaded)</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
 {% block primary_content_inner %}
+  <script type="text/javascript">
+    var data_for_reports = {};
+  </script>
   <div>
     <div class="row">
       <div class="col-sm-7 col-md-8 col-lg-9">
@@ -44,14 +58,6 @@
     </div>
 
     <div class="row" style="background: #fff;">
-      <div class="col-md-4">
-        <div class="whitebox">
-          <strong>Graph Legend</strong>
-          <div id="graph-legend-container">
-            <div style="display: none;" id="legend_none">(No graph is loaded)</div>
-          </div>
-        </div>
-      </div>
       <div class="col-md-8">
         <div class="whitebox">
           <div class="tabbable">
@@ -84,8 +90,8 @@
               <li><a href="#languages" data-hash="languages" data-toggle="tab">Languages</a></li>
               <li><a href="#country" data-hash="country" data-toggle="tab">Country</a></li>
             </ul>
-            <div class="tab-content">
-              <div class="tab-pane active" id="totals">
+            <div class="tab-content" style="display: block;">
+              <div class="tab-pane active in" id="totals">
                    <form class="form-inline" action="{{h.url_for(controller='ckanext.ga_report.controller:GaReport',action='index')}}" method="get">
                      <h4 class="ga-reports-heading">Show stats table for:</h4>
                      {{m.month_selector(c.month, c.months, c.day)}}
@@ -198,13 +204,22 @@
   </div>
 
     <script type="text/javascript">
-      $(function() {
-        CKAN.GA_Reports.bind_sparklines();
-        CKAN.GA_Reports.bind_sidebar();
-        CKAN.GA_Reports.bind_month_selector();
-      });
+        function defer_method(method) {
+            if (method) {
+                method();
+            } else {
+                setTimeout(function() { defer_method(method) }, 50);
+            }
+        }
+        $(function() {
+          for(i in data_for_reports) {
+            defer_method(CKAN.GA_Reports.render_rickshaw.apply(this, data_for_reports[i]));
+          }
+          defer_method(CKAN.GA_Reports.bind_sparklines);
+          defer_method(CKAN.GA_Reports.bind_month_selector);
+          defer_method(CKAN.GA_Reports.bind_sidebar);
+        });
     </script>
 
 {% endblock %}
-
 

@@ -69,8 +69,10 @@
   </div><!--/content-->
 
     <script type="text/javascript">
-      $(function() {
-        CKAN.GA_Reports.bind_month_selector();
-      });
+      window.onload = function() {
+        $(function() {
+          CKAN.GA_Reports.bind_month_selector();
+        });
+      }
     </script>
 {% endblock %}
