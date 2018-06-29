@@ -105,19 +105,29 @@
   {% endif %}
 
     <script type="text/javascript">
-        function defer_method(method) {
+        function deferMethod(method) {
             if (method) {
                 method();
             } else {
-                setTimeout(function() { defer_method(method) }, 50);
+                setTimeout(function() { deferMethod(method) }, 50);
             }
         }
-        $(function() {
-          for(i in data_for_reports) {
-            defer_method(CKAN.GA_Reports.render_rickshaw.apply(this, data_for_reports[i]));
+        function deferGraphData() {
+          if(window.jQuery) {
+            renderGraphData();
+          } else {
+            setTimeout(function() { deferGraphData() }, 50);
           }
-          defer_method(CKAN.GA_Reports.bind_month_selector);
-        });
+        }
+        function renderGraphData() {
+          $(function() {
+            for(i in data_for_reports) {
+              deferMethod(CKAN.GA_Reports.render_rickshaw.apply(this, data_for_reports[i]));
+            }
+            deferMethod(CKAN.GA_Reports.bind_month_selector);
+          });
+        }
+        deferGraphData();
     </script>
 
   {{m.ga_footer()}}
